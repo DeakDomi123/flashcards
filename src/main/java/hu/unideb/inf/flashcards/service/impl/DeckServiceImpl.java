@@ -2,6 +2,7 @@ package hu.unideb.inf.flashcards.service.impl;
 
 import hu.unideb.inf.flashcards.data.entity.DeckEntity;
 import hu.unideb.inf.flashcards.data.repository.DeckRepository;
+import hu.unideb.inf.flashcards.data.repository.UserRepository;
 import hu.unideb.inf.flashcards.service.DeckService;
 import hu.unideb.inf.flashcards.service.dto.DeckDTO;
 import org.modelmapper.ModelMapper;
@@ -9,11 +10,10 @@ import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class DeckManagementServiceImpl implements DeckService {
+public class DeckServiceImpl implements DeckService {
 
     @Autowired
     DeckRepository repo;
@@ -21,9 +21,13 @@ public class DeckManagementServiceImpl implements DeckService {
     @Autowired
     ModelMapper mapper;
 
+    @Autowired
+    UserRepository userRepo;
+
     @Override
     public DeckDTO save(DeckDTO dto) {
         DeckEntity entity = mapper.map(dto, DeckEntity.class);
+        entity.setUser(userRepo.findById(dto.getUserId()).orElseThrow(() -> new RuntimeException("User not found")));
         entity = repo.save(entity);
         return mapper.map(entity, DeckDTO.class);
     }

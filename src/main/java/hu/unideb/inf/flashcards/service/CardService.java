@@ -5,11 +5,10 @@ import hu.unideb.inf.flashcards.service.dto.CardDTO;
 import java.util.List;
 
 public interface CardService {
-    CardDTO getCardById(Long id);
-    CardDTO createCard(CardDTO cardDTO);
-    CardDTO updateCard(Long id, CardDTO cardDTO);
-    void deleteCard(Long id);
-    List<CardDTO> getAllCards();
-
+    CardDTO save(CardDTO dto);
+    CardDTO findById(Long id);
+    CardDTO update(CardDTO cardDTO);
+    void delete(Long id);
+    List<CardDTO> findAll();
     List<CardDTO> getCardsByDeckId(Long deckId);
 }

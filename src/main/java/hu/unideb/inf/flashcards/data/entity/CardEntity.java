@@ -19,7 +19,7 @@ public class CardEntity {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "deck_id", nullable = false)
+    @JoinColumn(name = "deck_id", nullable = false, referencedColumnName = "id")
     private DeckEntity deck;
 
     @Column(nullable = false)
@@ -28,6 +28,6 @@ public class CardEntity {
     @Column(nullable = false)
     private String answer;
 
+    @Column
     private String hint;
 }
-

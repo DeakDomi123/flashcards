@@ -19,7 +19,7 @@ public class UserStatisticsEntity {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false, unique = true, referencedColumnName = "id")
     private UserEntity user;
 
     @Column(name = "total_decks_created", nullable = false, columnDefinition = "integer default 0")

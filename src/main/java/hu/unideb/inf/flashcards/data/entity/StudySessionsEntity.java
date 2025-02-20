@@ -20,12 +20,12 @@ public class StudySessionsEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id")
     private UserEntity user;
 
-    @ManyToOne
-    @JoinColumn(name = "deck_id", nullable = false)
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "deck_id", nullable = false, referencedColumnName = "id")
     private DeckEntity deck;
 
     @Column(name = "start_time", nullable = false)
