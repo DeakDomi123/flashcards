@@ -48,7 +48,7 @@ public class JwtAuthServiceImpl implements JwtAuthService {
     }
 
     private boolean isTokenExpired(String token) {
-        Date d = extractClaim(token, Claims::getExpiration);
+        var d = extractClaim(token, Claims::getExpiration);
         return d.before(new Date());
     }
 

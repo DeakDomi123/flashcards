@@ -2,6 +2,7 @@ package hu.unideb.inf.flashcards.controller;
 
 import hu.unideb.inf.flashcards.service.CardService;
 import hu.unideb.inf.flashcards.service.dto.CardDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,20 +12,12 @@ import java.util.List;
 @RequestMapping("/api/cards")
 public class CardController {
 
-    private final CardService cardService;
-
-    public CardController(CardService cardService) {
-        this.cardService = cardService;
-    }
+    @Autowired
+    CardService cardService;
 
     @PostMapping
     public ResponseEntity<CardDTO> createCard(@RequestBody CardDTO dto) {
         return ResponseEntity.ok(cardService.save(dto));
-    }
-
-    @GetMapping
-    public ResponseEntity<List<CardDTO>> getAllCards() {
-        return ResponseEntity.ok(cardService.findAll());
     }
 
     @GetMapping("/{id}")

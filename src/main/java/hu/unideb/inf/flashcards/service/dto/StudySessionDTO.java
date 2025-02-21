@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class StudySessionDTO {
     private Long id;
-    private Long userId;
     private Long deckId;
     private LocalDateTime startTime;
     private LocalDateTime endTime;

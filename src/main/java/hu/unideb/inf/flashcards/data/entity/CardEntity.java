@@ -28,6 +28,5 @@ public class CardEntity {
     @Column(nullable = false)
     private String answer;
 
-    @Column
     private String hint;
 }

@@ -27,7 +27,7 @@ public class DeckEntity {
     @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id")
     private UserEntity user;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String name;
 
     private String description;

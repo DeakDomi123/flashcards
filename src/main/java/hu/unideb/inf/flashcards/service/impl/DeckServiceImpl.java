@@ -1,16 +1,20 @@
 package hu.unideb.inf.flashcards.service.impl;
 
 import hu.unideb.inf.flashcards.data.entity.DeckEntity;
+import hu.unideb.inf.flashcards.data.entity.UserEntity;
 import hu.unideb.inf.flashcards.data.repository.DeckRepository;
-import hu.unideb.inf.flashcards.data.repository.UserRepository;
+import hu.unideb.inf.flashcards.service.CommonService;
 import hu.unideb.inf.flashcards.service.DeckService;
+import hu.unideb.inf.flashcards.service.dto.CardDTO;
 import hu.unideb.inf.flashcards.service.dto.DeckDTO;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class DeckServiceImpl implements DeckService {
@@ -21,72 +25,57 @@ public class DeckServiceImpl implements DeckService {
     @Autowired
     ModelMapper mapper;
 
-    @Autowired
-    UserRepository userRepo;
-
     @Override
-    public DeckDTO save(DeckDTO dto) {
-        DeckEntity entity = mapper.map(dto, DeckEntity.class);
-        entity.setUser(userRepo.findById(dto.getUserId()).orElseThrow(() -> new RuntimeException("User not found")));
+    public DeckDTO save(DeckDTO dto, UserEntity user) {
+        var existingEntity = repo.findByName(dto.getName());
+        if (existingEntity != null)
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Deck already exists with name: " + dto.getName());
+        var entity = mapper.map(dto, DeckEntity.class);
+        entity.setUser(user);
         entity = repo.save(entity);
         return mapper.map(entity, DeckDTO.class);
     }
 
     @Override
-    public List<DeckDTO> findAll() {
-        List<DeckEntity> entities = repo.findAll();
-        return mapper.map(entities, new TypeToken<List<DeckDTO>>(){}.getType());
+    public List<DeckDTO> getDecksByUser(UserEntity user) {
+        var entities = repo.findAllByUserId(user.getId());
+        return entities.stream()
+                .map(entity -> mapper.map(entity, DeckDTO.class))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public List<DeckDTO> getDecksByUserId(Long userId) {
-        List<DeckEntity> filtered;
-        filtered = repo.findAll()
-                .stream()
-                .filter(x -> x.getUser().getId().equals(userId))
-                .toList();
-
-        return mapper.map(filtered, new TypeToken<List<DeckDTO>>(){}.getType());
-    }
-
-    @Override
-    public List<DeckDTO> findByName(String name) {
-        List<DeckEntity> filtered;
-        filtered = repo.findAll()
-                .stream()
-                .filter(x -> x.getName().equals(name))
-                .toList();
-
-        return mapper.map(filtered, new TypeToken<List<DeckDTO>>(){}.getType());
+    public DeckDTO findByName(String name) {
+        var entity = repo.findByName(name);
+        if (entity == null)
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Deck not found with name: " + name);
+        return mapper.map(entity, DeckDTO.class);
     }
 
     @Override
     public DeckDTO findById(Long id) {
-        DeckDTO dto = new DeckDTO();
-        DeckEntity entity = repo.getReferenceById(id);
-
-        dto.setId(entity.getId());
-        dto.setUserId(entity.getUser().getId());
-        dto.setName(entity.getName());
-        dto.setDescription(entity.getDescription());
-        dto.setDueDate(entity.getDueDate());
-        return dto;
+        var entity = repo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Deck not found with id: " + id));
+        return mapper.map(entity, DeckDTO.class);
     }
 
     @Override
     public DeckDTO update(DeckDTO dto) {
-        DeckEntity existingEntity = repo.findById(dto.getId()).orElseThrow(() -> new RuntimeException("Deck not found"));
+        var existingEntity = repo.findById(dto.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Deck not found"));
 
         existingEntity.setName(dto.getName());
         existingEntity.setDescription(dto.getDescription());
         existingEntity.setDueDate(dto.getDueDate());
 
-        DeckEntity updatedEntity = repo.save(existingEntity);
+        var updatedEntity = repo.save(existingEntity);
         return mapper.map(updatedEntity, DeckDTO.class);
     }
 
     @Override
     public void delete(Long id) {
+        if (!repo.existsById(id))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Deck not found with id: " + id);
         repo.deleteById(id);
     }
 }

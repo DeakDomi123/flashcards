@@ -22,18 +22,18 @@ public class UserStatisticsEntity {
     @JoinColumn(name = "user_id", nullable = false, unique = true, referencedColumnName = "id")
     private UserEntity user;
 
-    @Column(name = "total_decks_created", nullable = false, columnDefinition = "integer default 0")
+    @Column(nullable = false)
     private int totalDecksCreated;
 
-    @Column(name = "total_cards_studied", nullable = false, columnDefinition = "integer default 0")
+    @Column(nullable = false)
     private int totalCardsStudied;
 
-    @Column(name = "correct_answers", nullable = false, columnDefinition = "integer default 0")
+    @Column(nullable = false)
     private int correctAnswers;
 
-    @Column(name = "incorrect_answers", nullable = false, columnDefinition = "integer default 0")
+    @Column(nullable = false)
     private int incorrectAnswers;
 
-    @Column(name = "total_study_time", nullable = false, columnDefinition = "integer default 0")
+    @Column(nullable = false)
     private int totalStudyTime;
 }

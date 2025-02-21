@@ -1,8 +1,12 @@
 package hu.unideb.inf.flashcards.controller;
 
+import hu.unideb.inf.flashcards.service.CommonService;
 import hu.unideb.inf.flashcards.service.DeckService;
 import hu.unideb.inf.flashcards.service.dto.DeckDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,20 +15,17 @@ import java.util.List;
 @RequestMapping("/api/decks")
 public class DeckController {
 
-    private final DeckService deckService;
+    @Autowired
+    DeckService deckService;
 
-    public DeckController(DeckService deckService) {
-        this.deckService = deckService;
-    }
+    @Autowired
+    CommonService commonService;
 
     @PostMapping
-    public ResponseEntity<DeckDTO> createDeck(@RequestBody DeckDTO dto) {
-        return ResponseEntity.ok(deckService.save(dto));
-    }
-
-    @GetMapping
-    public ResponseEntity<List<DeckDTO>> getAllDecks() {
-        return ResponseEntity.ok(deckService.findAll());
+    public ResponseEntity<DeckDTO> createDeck(@RequestBody DeckDTO dto,
+                                              @AuthenticationPrincipal UserDetails userDetails) {
+        var user = commonService.getCurrentUser(userDetails);
+        return ResponseEntity.ok(deckService.save(dto, user));
     }
 
     @GetMapping("/{id}")
@@ -32,13 +33,14 @@ public class DeckController {
         return ResponseEntity.ok(deckService.findById(id));
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<DeckDTO>> getDecksByUserId(@PathVariable Long userId) {
-        return ResponseEntity.ok(deckService.getDecksByUserId(userId));
+    @GetMapping()
+    public ResponseEntity<List<DeckDTO>> getDecksByUser(@AuthenticationPrincipal UserDetails userDetails) {
+        var user = commonService.getCurrentUser(userDetails);
+        return ResponseEntity.ok(deckService.getDecksByUser(user));
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<DeckDTO>> findDecksByName(@RequestParam String name) {
+    public ResponseEntity<DeckDTO> findDecksByName(@RequestParam String name) {
         return ResponseEntity.ok(deckService.findByName(name));
     }
 

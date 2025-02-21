@@ -1,16 +1,15 @@
 package hu.unideb.inf.flashcards.service.impl;
 
+import hu.unideb.inf.flashcards.data.entity.UserEntity;
 import hu.unideb.inf.flashcards.data.entity.UserStatisticsEntity;
-import hu.unideb.inf.flashcards.data.repository.UserRepository;
 import hu.unideb.inf.flashcards.data.repository.UserStatisticsRepository;
 import hu.unideb.inf.flashcards.service.UserStatisticsService;
 import hu.unideb.inf.flashcards.service.dto.UserStatisticsDTO;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class UserStatisticsServiceImpl implements UserStatisticsService {
@@ -21,42 +20,33 @@ public class UserStatisticsServiceImpl implements UserStatisticsService {
     @Autowired
     ModelMapper mapper;
 
-    @Autowired
-    UserRepository userRepo;
+    private UserStatisticsDTO mapToDTO(UserStatisticsEntity entity) {
+        return mapper.map(entity, UserStatisticsDTO.class);
+    }
 
     @Override
-    public UserStatisticsDTO save(UserStatisticsDTO dto) {
-        UserStatisticsEntity entity = mapper.map(dto, UserStatisticsEntity.class);
-        entity.setUser(userRepo.findById(dto.getUserId()).orElseThrow(() -> new RuntimeException("User not found")));
+    public UserStatisticsDTO save(UserStatisticsDTO dto, UserEntity user) {
+        var existingEntity = repo.findByUserId(user.getId());
+        if (existingEntity != null)
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "User statistics already exists for user with id: " + user.getId());
+        var entity = mapper.map(dto, UserStatisticsEntity.class);
+        entity.setUser(user);
         entity = repo.save(entity);
         return mapper.map(entity, UserStatisticsDTO.class);
     }
 
     @Override
-    public List<UserStatisticsDTO> findAll() {
-        List<UserStatisticsEntity> entities = repo.findAll();
-        return mapper.map(entities, new TypeToken<List<UserStatisticsDTO>>(){}.getType());
-    }
-
-    @Override
     public UserStatisticsDTO findById(Long id) {
-        UserStatisticsDTO dto = new UserStatisticsDTO();
-        UserStatisticsEntity entity = repo.getReferenceById(id);
-
-        dto.setId(entity.getId());
-        dto.setUserId(entity.getUser().getId());
-        dto.setTotalDecksCreated(entity.getTotalDecksCreated());
-        dto.setTotalCardsStudied(entity.getTotalCardsStudied());
-        dto.setCorrectAnswers(entity.getCorrectAnswers());
-        dto.setIncorrectAnswers(entity.getIncorrectAnswers());
-        dto.setTotalStudyTime(entity.getTotalStudyTime());
-
-        return dto;
+        var entity = repo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User statistic not found with id: " + id));
+        return mapToDTO(entity);
     }
 
     @Override
-    public UserStatisticsDTO update(UserStatisticsDTO dto) {
-        UserStatisticsEntity existingEntity = repo.findById(dto.getId()).orElseThrow(() -> new RuntimeException("Study Session not found"));
+    public UserStatisticsDTO update(UserStatisticsDTO dto, UserEntity user) {
+        var existingEntity = repo.findByUserId(user.getId());
+        if (existingEntity == null)
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User statistic not found with userId: " + user.getId());
 
         existingEntity.setTotalDecksCreated(dto.getTotalDecksCreated());
         existingEntity.setTotalCardsStudied(dto.getTotalCardsStudied());
@@ -65,13 +55,15 @@ public class UserStatisticsServiceImpl implements UserStatisticsService {
         existingEntity.setTotalStudyTime(dto.getTotalStudyTime());
 
 
-        UserStatisticsEntity updatedEntity = repo.save(existingEntity);
+        var updatedEntity = repo.save(existingEntity);
         return mapper.map(updatedEntity, UserStatisticsDTO.class);
     }
 
     @Override
-    public UserStatisticsDTO findByUserId(Long userId) {
-        UserStatisticsEntity entity = repo.findByUserId(userId);
-        return mapper.map(entity, UserStatisticsDTO.class);
+    public UserStatisticsDTO findByUser(UserEntity user) {
+        var entity = repo.findByUserId(user.getId());
+        if (entity == null)
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User statistic not with userId: " + user.getId());
+        return mapToDTO(entity);
     }
 }

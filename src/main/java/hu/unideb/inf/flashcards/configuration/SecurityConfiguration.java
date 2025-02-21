@@ -1,7 +1,6 @@
 package hu.unideb.inf.flashcards.configuration;
 
 import hu.unideb.inf.flashcards.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,24 +34,19 @@ public class SecurityConfiguration {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        //cross-site request forgery
-        http.cors(cust -> cust.configurationSource(new CorsConfigurationSource() {
-                    @Override
-                    public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
-                        CorsConfiguration config = new CorsConfiguration().applyPermitDefaultValues();
-                        config.setAllowedOrigins(List.of("*"));
-                        config.setAllowedMethods(List.of("*"));
-                        config.setAllowedHeaders(List.of("*"));
-                        return config;
-                    }
-                })).csrf(AbstractHttpConfigurer::disable)
+        http.cors(cust -> cust.configurationSource(_ -> {
+            var config = new CorsConfiguration().applyPermitDefaultValues();
+            config.setAllowedOrigins(List.of("*"));
+            config.setAllowedMethods(List.of("*"));
+            config.setAllowedHeaders(List.of("*"));
+            return config;
+        })).csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request.requestMatchers("/auth/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .headers(header -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable));
-
 
         return http.build();
     }
@@ -64,10 +58,9 @@ public class SecurityConfiguration {
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        var authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userService.userDetailsService());
         authProvider.setPasswordEncoder(passwordEncoder());
-
         return authProvider;
     }
 

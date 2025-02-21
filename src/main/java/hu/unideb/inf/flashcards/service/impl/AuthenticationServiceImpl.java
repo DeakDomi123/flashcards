@@ -10,11 +10,12 @@ import hu.unideb.inf.flashcards.service.dto.LoginDTO;
 import hu.unideb.inf.flashcards.service.dto.RegisterDTO;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class AuthenticationServiceImpl implements AuthenticationService {
@@ -33,9 +34,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public String register(RegisterDTO dto) {
-        UserEntity user = modelMapper.map(dto, UserEntity.class);
+        var existingUser = repo.findByUsername(dto.getUsername());
+        if (existingUser != null)
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "User already exists.");
+        var user = modelMapper.map(dto, UserEntity.class);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        Authority authority = jogRepo.findByName("USER");
+        var authority = jogRepo.findByName("USER");
         if (authority == null) {
             authority = new Authority();
             authority.setName("USER");
@@ -51,10 +55,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public String login(LoginDTO dto) {
-        Authentication auth = manager.authenticate(
+        manager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         dto.getUsername()
-                        ,dto.getPassword()
+                        , dto.getPassword()
                 )
         );
         var user = repo.findByUsername(dto.getUsername());

@@ -1,17 +1,19 @@
 package hu.unideb.inf.flashcards.service.impl;
 
 import hu.unideb.inf.flashcards.data.entity.StudySessionsEntity;
+import hu.unideb.inf.flashcards.data.entity.UserEntity;
 import hu.unideb.inf.flashcards.data.repository.DeckRepository;
-import hu.unideb.inf.flashcards.data.repository.UserRepository;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeToken;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import hu.unideb.inf.flashcards.data.repository.StudySessionRepository;
 import hu.unideb.inf.flashcards.service.StudySessionService;
 import hu.unideb.inf.flashcards.service.dto.StudySessionDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class StudySessionServiceImpl implements StudySessionService {
@@ -25,71 +27,50 @@ public class StudySessionServiceImpl implements StudySessionService {
     @Autowired
     DeckRepository deckRepo;
 
-    @Autowired
-    UserRepository userRepo;
+    private StudySessionDTO mapToDTO(StudySessionsEntity entity) {
+        return mapper.map(entity, StudySessionDTO.class);
+    }
 
     @Override
-    public StudySessionDTO save(StudySessionDTO dto) {
-        StudySessionsEntity entity = mapper.map(dto, StudySessionsEntity.class);
-        entity.setUser(userRepo.findById(dto.getUserId()).orElseThrow(() -> new RuntimeException("User not found")));
-        entity.setDeck(deckRepo.findById(dto.getDeckId()).orElseThrow(() -> new RuntimeException("Deck not found")));
+    public StudySessionDTO save(StudySessionDTO dto, UserEntity user) {
+        var entity = mapper.map(dto, StudySessionsEntity.class);
+        entity.setUser(user);
+        entity.setDeck(deckRepo.findById(dto.getDeckId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Deck not found")));
         entity = repo.save(entity);
         return mapper.map(entity, StudySessionDTO.class);
     }
 
     @Override
-    public List<StudySessionDTO> findAll() {
-        List<StudySessionsEntity> entities = repo.findAll();
-        return mapper.map(entities, new TypeToken<List<StudySessionDTO>>(){}.getType());
-    }
-
-    @Override
     public StudySessionDTO findById(Long id) {
-        StudySessionDTO dto = new StudySessionDTO();
-        StudySessionsEntity entity = repo.getReferenceById(id);
-
-        dto.setId(entity.getId());
-        dto.setUserId(entity.getUser().getId());
-        dto.setDeckId(entity.getDeck().getId());
-        dto.setStartTime(entity.getStartTime());
-        dto.setEndTime(entity.getEndTime());
-        dto.setCorrectAnswers(entity.getCorrectAnswers());
-        dto.setIncorrectAnswers(entity.getIncorrectAnswers());
-        return dto;
+        var entity = repo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Study session not found with id: " + id));
+        return mapToDTO(entity);
     }
 
     @Override
-    public List<StudySessionDTO> getStudySessionsByUserId(Long userId) {
-        List<StudySessionsEntity> filtered;
-        filtered = repo.findAll()
-                .stream()
-                .filter(x -> x.getUser().getId().equals(userId))
-                .toList();
-
-        return mapper.map(filtered, new TypeToken<List<StudySessionDTO>>(){}.getType());
+    public List<StudySessionDTO> getStudySessionsByUser(UserEntity user) {
+        var entities = repo.findByUserId(user.getId());
+        return entities.stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
     @Override
     public List<StudySessionDTO> getStudySessionsByDeckId(Long deckId) {
-        List<StudySessionsEntity> filtered;
-        filtered = repo.findAll()
-                .stream()
-                .filter(x -> x.getDeck().getId().equals(deckId))
-                .toList();
-
-        return mapper.map(filtered, new TypeToken<List<StudySessionDTO>>(){}.getType());
+        var entities = repo.findByDeckId(deckId);
+        return entities.stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
     @Override
     public StudySessionDTO update(StudySessionDTO dto) {
-        StudySessionsEntity existingEntity = repo.findById(dto.getId()).orElseThrow(() -> new RuntimeException("Study Session not found"));
+        var existingEntity = repo.findById(dto.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Study session not found"));
 
         existingEntity.setStartTime(dto.getStartTime());
         existingEntity.setEndTime(dto.getEndTime());
         existingEntity.setCorrectAnswers(dto.getCorrectAnswers());
 
 
-        StudySessionsEntity updatedEntity = repo.save(existingEntity);
+        var updatedEntity = repo.save(existingEntity);
         return mapper.map(updatedEntity, StudySessionDTO.class);
     }
 }

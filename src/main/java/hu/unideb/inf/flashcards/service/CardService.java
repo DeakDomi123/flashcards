@@ -9,6 +9,5 @@ public interface CardService {
     CardDTO findById(Long id);
     CardDTO update(CardDTO cardDTO);
     void delete(Long id);
-    List<CardDTO> findAll();
     List<CardDTO> getCardsByDeckId(Long deckId);
 }

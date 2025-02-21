@@ -1,30 +1,29 @@
 package hu.unideb.inf.flashcards.controller;
 
+import hu.unideb.inf.flashcards.service.CommonService;
 import hu.unideb.inf.flashcards.service.UserStatisticsService;
 import hu.unideb.inf.flashcards.service.dto.UserStatisticsDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/user-statistics")
 public class UserStatisticsController {
 
-    private final UserStatisticsService userStatisticsService;
+    @Autowired
+    UserStatisticsService userStatisticsService;
 
-    public UserStatisticsController(UserStatisticsService userStatisticsService) {
-        this.userStatisticsService = userStatisticsService;
-    }
+    @Autowired
+    CommonService commonService;
 
     @PostMapping
-    public ResponseEntity<UserStatisticsDTO> createUserStatistics(@RequestBody UserStatisticsDTO dto) {
-        return ResponseEntity.ok(userStatisticsService.save(dto));
-    }
-
-    @GetMapping
-    public ResponseEntity<List<UserStatisticsDTO>> getAllUserStatistics() {
-        return ResponseEntity.ok(userStatisticsService.findAll());
+    public ResponseEntity<UserStatisticsDTO> createUserStatistics(@RequestBody UserStatisticsDTO dto,
+                                                                  @AuthenticationPrincipal UserDetails userDetails) {
+        var user = commonService.getCurrentUser(userDetails);
+        return ResponseEntity.ok(userStatisticsService.save(dto, user));
     }
 
     @GetMapping("/{id}")
@@ -33,12 +32,15 @@ public class UserStatisticsController {
     }
 
     @PutMapping
-    public ResponseEntity<UserStatisticsDTO> updateUserStatistics(@RequestBody UserStatisticsDTO dto) {
-        return ResponseEntity.ok(userStatisticsService.update(dto));
+    public ResponseEntity<UserStatisticsDTO> updateUserStatistics(@RequestBody UserStatisticsDTO dto,
+                                                                  @AuthenticationPrincipal UserDetails userDetails) {
+        var user = commonService.getCurrentUser(userDetails);
+        return ResponseEntity.ok(userStatisticsService.update(dto, user));
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<UserStatisticsDTO> getUserStatisticsByUserId(@PathVariable Long userId) {
-        return ResponseEntity.ok(userStatisticsService.findByUserId(userId));
+    @GetMapping
+    public ResponseEntity<UserStatisticsDTO> getUserStatisticsByUser(@AuthenticationPrincipal UserDetails userDetails) {
+        var user = commonService.getCurrentUser(userDetails);
+        return ResponseEntity.ok(userStatisticsService.findByUser(user));
     }
 }

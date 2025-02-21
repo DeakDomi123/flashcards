@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class DeckDTO {
     private Long id;
-    private Long userId;
     private String name;
     private String description;
     private LocalDateTime dueDate;
