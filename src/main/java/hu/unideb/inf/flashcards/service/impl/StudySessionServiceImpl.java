@@ -36,7 +36,7 @@ public class StudySessionServiceImpl implements StudySessionService {
         var entity = mapper.map(dto, StudySessionsEntity.class);
         entity.setUser(user);
         entity.setDeck(deckRepo.findById(dto.getDeckId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Deck not found")));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Study session not found")));
         entity = repo.save(entity);
         return mapper.map(entity, StudySessionDTO.class);
     }
