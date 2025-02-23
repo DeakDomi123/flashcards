@@ -6,16 +6,21 @@ import hu.unideb.inf.flashcards.data.repository.AuthorityRepository;
 import hu.unideb.inf.flashcards.data.repository.UserRepository;
 import hu.unideb.inf.flashcards.service.AuthenticationService;
 import hu.unideb.inf.flashcards.service.JwtAuthService;
+import hu.unideb.inf.flashcards.service.UserService;
 import hu.unideb.inf.flashcards.service.dto.LoginDTO;
 import hu.unideb.inf.flashcards.service.dto.RegisterDTO;
+import hu.unideb.inf.flashcards.service.dto.UserResponseDTO;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Optional;
 
 @Service
 public class AuthenticationServiceImpl implements AuthenticationService {
@@ -31,6 +36,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     AuthenticationManager manager;
     @Autowired
     JwtAuthService jwtService;
+    @Autowired
+    UserService userService;
 
     @Override
     public String register(RegisterDTO dto) {
@@ -55,13 +62,35 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public String login(LoginDTO dto) {
-        manager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        dto.getUsername()
-                        , dto.getPassword()
-                )
-        );
+        try {
+            manager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            dto.getUsername()
+                            , dto.getPassword()
+                    )
+            );
+        }
+        catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials.");
+        }
         var user = repo.findByUsername(dto.getUsername());
         return jwtService.generateToken(user);
+    }
+
+    @Override
+    public Optional<UserResponseDTO> getValidatedUser(String token) {
+        String userName = jwtService.extractUsername(token);
+        UserDetails userDetails = userService.userDetailsService().loadUserByUsername(userName);
+        if (jwtService.validateToken(token, userDetails)) {
+            UserResponseDTO userDto = new UserResponseDTO(
+                    userDetails.getUsername(),
+                    userDetails.getAuthorities().stream()
+                            .findFirst()
+                            .orElseThrow(() -> new RuntimeException("No authority found"))
+                            .getAuthority()
+            );
+            return Optional.of(userDto);
+        }
+        return Optional.empty();
     }
 }

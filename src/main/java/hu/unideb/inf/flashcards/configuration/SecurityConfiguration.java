@@ -35,13 +35,14 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.cors(cust -> cust.configurationSource(_ -> {
-            var config = new CorsConfiguration().applyPermitDefaultValues();
-            config.setAllowedOrigins(List.of("*"));
-            config.setAllowedMethods(List.of("*"));
-            config.setAllowedHeaders(List.of("*"));
+            var config = new CorsConfiguration();
+            config.setAllowedOrigins(List.of("http://localhost:3000"));
+            config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+            config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Origin", "X-Requested-With", "Accept"));
+            config.setAllowCredentials(true);
             return config;
         })).csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(request -> request.requestMatchers("/auth/**").permitAll()
+                .authorizeHttpRequests(request -> request.requestMatchers("/api/auth/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
                 .authenticationProvider(authenticationProvider())
