@@ -4,6 +4,7 @@ import hu.unideb.inf.flashcards.service.JwtAuthService;
 import hu.unideb.inf.flashcards.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
@@ -27,20 +29,31 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        String jwt = null;
+        String userName;
         final String authHeader = request.getHeader("Authorization");
-        final String jwt;
-        final String userName;
-        if(StringUtils.isEmpty(authHeader) || !StringUtils.startsWith(authHeader,"Bearer ")){
-            filterChain.doFilter(request,response);
+        if (StringUtils.isNotEmpty(authHeader) && StringUtils.startsWith(authHeader, "Bearer ")) {
+            jwt = authHeader.substring(7);
+        } else {
+            if (request.getCookies() != null) {
+                jwt = Arrays.stream(request.getCookies())
+                        .filter(cookie -> "jwt_token".equals(cookie.getName()))
+                        .map(Cookie::getValue)
+                        .findFirst()
+                        .orElse(null);
+            }
+        }
+
+        if (StringUtils.isEmpty(jwt)) {
+            filterChain.doFilter(request, response);
             return;
         }
-        jwt = authHeader.substring(7);
-        userName = jwtAuthService.extractUsername(jwt);
 
-        if(StringUtils.isNotEmpty(userName)
-                && SecurityContextHolder.getContext().getAuthentication() == null){
+        userName = jwtAuthService.extractUsername(jwt);
+        if (StringUtils.isNotEmpty(userName) && SecurityContextHolder.getContext().getAuthentication() == null) {
             var userDetails = userService.userDetailsService().loadUserByUsername(userName);
-            if(jwtAuthService.validateToken(jwt, userDetails)){
+
+            if (jwtAuthService.validateToken(jwt, userDetails)) {
                 var context = SecurityContextHolder.createEmptyContext();
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities()
@@ -50,6 +63,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 SecurityContextHolder.setContext(context);
             }
         }
-        filterChain.doFilter(request,response);
+        filterChain.doFilter(request, response);
     }
 }
