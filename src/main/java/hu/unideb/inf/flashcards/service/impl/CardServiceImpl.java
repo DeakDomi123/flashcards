@@ -1,6 +1,8 @@
 package hu.unideb.inf.flashcards.service.impl;
 
 import hu.unideb.inf.flashcards.data.entity.CardEntity;
+import hu.unideb.inf.flashcards.data.entity.DeckEntity;
+import hu.unideb.inf.flashcards.data.entity.UserEntity;
 import hu.unideb.inf.flashcards.data.repository.CardRepository;
 import hu.unideb.inf.flashcards.data.repository.DeckRepository;
 import hu.unideb.inf.flashcards.service.CardService;
@@ -52,6 +54,14 @@ public class CardServiceImpl implements CardService {
 
         var updatedEntity = repo.save(existingEntity);
         return mapper.map(updatedEntity, CardDTO.class);
+    }
+
+    @Override
+    public List<CardDTO> getCardsByUser(UserEntity user) {
+        var userDecks = deckRepo.findAllByUserId(user.getId());
+        return userDecks.stream()
+                .map(entity -> mapper.map(entity, CardDTO.class))
+                .toList();
     }
 
     @Override
