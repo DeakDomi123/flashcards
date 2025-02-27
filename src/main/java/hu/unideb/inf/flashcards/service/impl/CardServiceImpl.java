@@ -61,9 +61,14 @@ public class CardServiceImpl implements CardService {
     @Override
     public List<CardDTO> getCardsByUser(UserEntity user) {
         var userDecks = deckRepo.findAllByUserId(user.getId());
-        return userDecks.stream()
-                .map(entity -> mapper.map(entity, CardDTO.class))
+        var cards = userDecks.stream()
+                .map(DeckEntity::getId)
+                .map(repo::findByDeckId)
+                .flatMap(List::stream)
                 .toList();
+        return cards.stream()
+                .map(entity -> mapper.map(entity, CardDTO.class))
+                .collect(Collectors.toList());
     }
 
     @Override
