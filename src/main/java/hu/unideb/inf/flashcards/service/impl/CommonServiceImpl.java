@@ -3,7 +3,6 @@ package hu.unideb.inf.flashcards.service.impl;
 import hu.unideb.inf.flashcards.data.entity.UserEntity;
 import hu.unideb.inf.flashcards.data.repository.UserRepository;
 import hu.unideb.inf.flashcards.service.CommonService;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.userdetails.UserDetails;

@@ -16,5 +16,6 @@ public class CardDTO {
     private Long deckId;
     private String question;
     private String answer;
+    private boolean isLearned;
     private String hint;
 }

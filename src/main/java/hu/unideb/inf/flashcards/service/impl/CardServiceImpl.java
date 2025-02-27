@@ -50,7 +50,9 @@ public class CardServiceImpl implements CardService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Card not found"));
         existingEntity.setQuestion(cardDTO.getQuestion());
         existingEntity.setAnswer(cardDTO.getAnswer());
-        existingEntity.setHint(cardDTO.getHint());
+        existingEntity.setLearned(cardDTO.isLearned());
+        if (cardDTO.getHint() != null)
+            existingEntity.setHint(cardDTO.getHint());
 
         var updatedEntity = repo.save(existingEntity);
         return mapper.map(updatedEntity, CardDTO.class);

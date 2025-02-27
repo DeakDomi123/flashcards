@@ -65,10 +65,11 @@ public class StudySessionServiceImpl implements StudySessionService {
         var existingEntity = repo.findById(dto.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Study session not found"));
 
-        existingEntity.setStartTime(dto.getStartTime());
+        if (dto.getEndTime() == null || dto.getEndTime().isBefore(dto.getStartTime()))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "End time cannot be before start time");
         existingEntity.setEndTime(dto.getEndTime());
         existingEntity.setCorrectAnswers(dto.getCorrectAnswers());
-
+        existingEntity.setIncorrectAnswers(dto.getIncorrectAnswers());
 
         var updatedEntity = repo.save(existingEntity);
         return mapper.map(updatedEntity, StudySessionDTO.class);

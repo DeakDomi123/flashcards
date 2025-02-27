@@ -48,12 +48,10 @@ public class UserStatisticsServiceImpl implements UserStatisticsService {
         if (existingEntity == null)
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User statistic not found with userId: " + user.getId());
 
-        existingEntity.setTotalDecksCreated(dto.getTotalDecksCreated());
         existingEntity.setTotalCardsStudied(dto.getTotalCardsStudied());
         existingEntity.setCorrectAnswers(dto.getCorrectAnswers());
         existingEntity.setIncorrectAnswers(dto.getIncorrectAnswers());
         existingEntity.setTotalStudyTime(dto.getTotalStudyTime());
-
 
         var updatedEntity = repo.save(existingEntity);
         return mapper.map(updatedEntity, UserStatisticsDTO.class);

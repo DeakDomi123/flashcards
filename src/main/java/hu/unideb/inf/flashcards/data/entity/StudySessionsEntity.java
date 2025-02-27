@@ -28,15 +28,13 @@ public class StudySessionsEntity {
     @JoinColumn(name = "deck_id", nullable = false, referencedColumnName = "id")
     private DeckEntity deck;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime startTime;
 
     private LocalDateTime endTime;
 
-    @Column(nullable = false)
     private int correctAnswers;
 
-    @Column(nullable = false)
     private int incorrectAnswers;
 }
 

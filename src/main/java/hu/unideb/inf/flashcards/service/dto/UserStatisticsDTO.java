@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class UserStatisticsDTO {
     private Long id;
-    private int totalDecksCreated;
     private int totalCardsStudied;
     private int correctAnswers;
     private int incorrectAnswers;

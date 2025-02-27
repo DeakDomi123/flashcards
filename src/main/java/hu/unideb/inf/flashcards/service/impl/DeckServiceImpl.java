@@ -3,9 +3,7 @@ package hu.unideb.inf.flashcards.service.impl;
 import hu.unideb.inf.flashcards.data.entity.DeckEntity;
 import hu.unideb.inf.flashcards.data.entity.UserEntity;
 import hu.unideb.inf.flashcards.data.repository.DeckRepository;
-import hu.unideb.inf.flashcards.service.CommonService;
 import hu.unideb.inf.flashcards.service.DeckService;
-import hu.unideb.inf.flashcards.service.dto.CardDTO;
 import hu.unideb.inf.flashcards.service.dto.DeckDTO;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +25,11 @@ public class DeckServiceImpl implements DeckService {
 
     @Override
     public DeckDTO save(DeckDTO dto, UserEntity user) {
-        var existingEntity = repo.findByName(dto.getName());
+        var userDecks = repo.findAllByUserId(user.getId());
+        var existingEntity = userDecks.stream()
+                .filter(deckEntity -> deckEntity.getName().equals(dto.getName()))
+                .findFirst()
+                .orElse(null);
         if (existingEntity != null)
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Deck already exists with name: " + dto.getName());
         var entity = mapper.map(dto, DeckEntity.class);
