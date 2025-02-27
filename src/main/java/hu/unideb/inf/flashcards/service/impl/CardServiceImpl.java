@@ -51,8 +51,6 @@ public class CardServiceImpl implements CardService {
         existingEntity.setQuestion(cardDTO.getQuestion());
         existingEntity.setAnswer(cardDTO.getAnswer());
         existingEntity.setLearned(cardDTO.isLearned());
-        if (cardDTO.getHint() != null)
-            existingEntity.setHint(cardDTO.getHint());
 
         var updatedEntity = repo.save(existingEntity);
         return mapper.map(updatedEntity, CardDTO.class);

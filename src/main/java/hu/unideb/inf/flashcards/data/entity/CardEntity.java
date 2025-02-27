@@ -29,6 +29,4 @@ public class CardEntity {
     private String answer;
 
     private boolean isLearned;
-
-    private String hint;
 }
