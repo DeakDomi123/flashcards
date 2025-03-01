@@ -30,6 +30,8 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public CardDTO save(CardDTO dto) {
+        if (dto.getQuestion().isEmpty() || dto.getAnswer().isEmpty())
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
         var entity = mapper.map(dto, CardEntity.class);
         entity.setDeck(deckRepo.findById(dto.getDeckId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Deck not found")));
@@ -50,7 +52,7 @@ public class CardServiceImpl implements CardService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Card not found"));
         existingEntity.setQuestion(cardDTO.getQuestion());
         existingEntity.setAnswer(cardDTO.getAnswer());
-        existingEntity.setLearned(cardDTO.isLearned());
+        existingEntity.setLearnProgress(cardDTO.getLearnProgress());
 
         var updatedEntity = repo.save(existingEntity);
         return mapper.map(updatedEntity, CardDTO.class);

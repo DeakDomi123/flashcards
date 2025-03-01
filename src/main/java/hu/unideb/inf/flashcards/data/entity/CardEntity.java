@@ -28,5 +28,5 @@ public class CardEntity {
     @Column(nullable = false)
     private String answer;
 
-    private boolean isLearned;
+    private Integer learnProgress;
 }
