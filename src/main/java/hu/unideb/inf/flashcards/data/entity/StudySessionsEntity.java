@@ -38,5 +38,7 @@ public class StudySessionsEntity {
 
     private int correctAnswers;
 
+    private int unsureAnswers;
+
     private int incorrectAnswers;
 }

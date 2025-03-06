@@ -15,6 +15,7 @@ public class UserStatisticsDTO {
     private Long id;
     private int totalCardsStudied;
     private int correctAnswers;
+    private int unsureAnswers;
     private int incorrectAnswers;
     private int totalStudyTime;
 }

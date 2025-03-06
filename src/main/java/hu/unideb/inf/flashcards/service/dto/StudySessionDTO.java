@@ -17,5 +17,6 @@ public class StudySessionDTO {
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private int correctAnswers;
+    private int unsureAnswers;
     private int incorrectAnswers;
 }

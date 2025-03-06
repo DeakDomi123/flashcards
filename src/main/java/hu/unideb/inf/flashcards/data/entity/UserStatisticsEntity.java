@@ -28,5 +28,7 @@ public class UserStatisticsEntity {
 
     private int incorrectAnswers;
 
+    private int unsureAnswers;
+
     private int totalStudyTime;
 }

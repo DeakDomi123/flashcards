@@ -50,6 +50,7 @@ public class UserStatisticsServiceImpl implements UserStatisticsService {
 
         existingEntity.setTotalCardsStudied(dto.getTotalCardsStudied());
         existingEntity.setCorrectAnswers(dto.getCorrectAnswers());
+        existingEntity.setUnsureAnswers(dto.getUnsureAnswers());
         existingEntity.setIncorrectAnswers(dto.getIncorrectAnswers());
         existingEntity.setTotalStudyTime(dto.getTotalStudyTime());
 

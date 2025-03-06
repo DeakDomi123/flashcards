@@ -12,6 +12,7 @@ import hu.unideb.inf.flashcards.service.dto.StudySessionDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,6 +38,8 @@ public class StudySessionServiceImpl implements StudySessionService {
         entity.setUser(user);
         entity.setDeck(deckRepo.findById(dto.getDeckId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Study session not found")));
+        entity.setStartTime(LocalDateTime.now());
+        entity.setEndTime(LocalDateTime.now());
         entity = repo.save(entity);
         return mapper.map(entity, StudySessionDTO.class);
     }
@@ -65,10 +68,12 @@ public class StudySessionServiceImpl implements StudySessionService {
         var existingEntity = repo.findById(dto.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Study session not found"));
 
-        if (dto.getEndTime() == null || dto.getEndTime().isBefore(dto.getStartTime()))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "End time cannot be before start time");
-        existingEntity.setEndTime(dto.getEndTime());
+        if (dto.getEndTime() == null)
+            existingEntity.setEndTime(LocalDateTime.now());
+        else
+            existingEntity.setEndTime(dto.getEndTime());
         existingEntity.setCorrectAnswers(dto.getCorrectAnswers());
+        existingEntity.setUnsureAnswers(dto.getUnsureAnswers());
         existingEntity.setIncorrectAnswers(dto.getIncorrectAnswers());
 
         var updatedEntity = repo.save(existingEntity);
