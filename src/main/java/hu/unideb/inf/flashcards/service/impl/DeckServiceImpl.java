@@ -66,7 +66,9 @@ public class DeckServiceImpl implements DeckService {
         var existingEntity = repo.findById(dto.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Deck not found"));
 
-        existingEntity.setName(dto.getName());
+        if (dto.getName() != null)
+            existingEntity.setName(dto.getName());
+        existingEntity.setLearned(dto.isLearned());
         existingEntity.setDescription(dto.getDescription());
         existingEntity.setDueDate(dto.getDueDate());
 
