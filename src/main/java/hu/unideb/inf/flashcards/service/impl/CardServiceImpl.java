@@ -6,7 +6,6 @@ import hu.unideb.inf.flashcards.data.entity.UserEntity;
 import hu.unideb.inf.flashcards.data.repository.CardRepository;
 import hu.unideb.inf.flashcards.data.repository.DeckRepository;
 import hu.unideb.inf.flashcards.service.CardService;
-import hu.unideb.inf.flashcards.service.CommonService;
 import hu.unideb.inf.flashcards.service.dto.CardDTO;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+
 
 @Entity
 @Table(name = "cards")
@@ -28,5 +31,8 @@ public class CardEntity {
     @Column(nullable = false)
     private String answer;
 
-    private Integer learnProgress;
+    @Min(1)
+    @Max(3)
+    @Column(nullable = false)
+    private Integer learnProgress;    
 }
