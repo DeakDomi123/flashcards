@@ -39,7 +39,7 @@ public class StudySessionServiceImpl implements StudySessionService {
         entity.setDeck(deckRepo.findById(dto.getDeckId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Study session not found")));
         entity.setStartTime(LocalDateTime.now());
-        entity.setEndTime(LocalDateTime.now());
+        entity.setEndTime(LocalDateTime.now().plusSeconds(2));
         entity = repo.save(entity);
         return mapper.map(entity, StudySessionDTO.class);
     }
@@ -69,7 +69,7 @@ public class StudySessionServiceImpl implements StudySessionService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Study session not found"));
 
         if (dto.getEndTime() == null)
-            existingEntity.setEndTime(LocalDateTime.now());
+            existingEntity.setEndTime(LocalDateTime.now().plusSeconds(2));
         else
             existingEntity.setEndTime(dto.getEndTime());
         existingEntity.setCorrectAnswers(dto.getCorrectAnswers());
